@@ -1,5 +1,3 @@
-// assets\js\sceneSetup.js
-
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.126.0/build/three.module.js';
 
 const scene = new THREE.Scene();
@@ -16,7 +14,6 @@ function setupScene() {
     player.position.set(2, 8, 50);
     scene.add(player);
 
-    // תאורה
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(100, 200, 100);
     directionalLight.castShadow = true;
@@ -25,11 +22,9 @@ function setupScene() {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    // ערפל
     const fog = new THREE.FogExp2(0x87CEEB, 0.0005);
     scene.fog = fog;
 
-    // קרקע
     const textureLoader = new THREE.TextureLoader();
     const groundTexture = textureLoader.load('https://threejs.org/examples/textures/terrain/grasslight-big.jpg');
     groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
@@ -44,7 +39,6 @@ function setupScene() {
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // מסלול נחיתה
     const runwayGroup = createRunway();
     scene.add(runwayGroup);
 }

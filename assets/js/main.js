@@ -1,12 +1,9 @@
-// assets\js\main.js
-
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.126.0/build/three.module.js';
 import { setupScene, scene, camera, renderer, player } from './sceneSetup.js';
-import { updatePlaneControls, switchPlane, startBarrelRoll, bullets } from './planeControls.js';
+import { Plane, currentPlane, switchPlane } from './planeControls.js';
 import { createEnvironment, updateEnvironment, balloons, checkCollisions, score, difficultyLevel } from './environment.js';
 import { playMusic, nextTrack, previousTrack, stopTrack } from './audio.js';
 
-// הגדרת מצלמה
 const cameraOffsets = {
     'TPS': new THREE.Vector3(0, 30, 45),
     'FPS': new THREE.Vector3(0, 5, 10),
@@ -14,20 +11,18 @@ const cameraOffsets = {
 };
 let currentCameraView = 'TPS';
 
-// האזנה לאירועי מקלדת
 const keys = {};
 window.addEventListener('keydown', (e) => {
     keys[e.key] = true;
     if (e.key === 'p' || e.key === 'P') switchPlane();
     if (e.key === 'c' || e.key === 'C') switchCamera();
-    if (e.key === 'r' || e.key === 'R') startBarrelRoll();
+    if (e.key === 'r' || e.key === 'R') currentPlane.startBarrelRoll();
     if (e.key === ']') nextTrack();
     if (e.key === '[') previousTrack();
     if (e.key === ';') stopTrack();
 });
 window.addEventListener('keyup', (e) => keys[e.key] = false);
 
-// החלפת מצלמה
 function switchCamera() {
     const views = Object.keys(cameraOffsets);
     const currentIndex = views.indexOf(currentCameraView);
@@ -36,7 +31,6 @@ function switchCamera() {
     showMessage(`מצלמה: ${currentCameraView}`);
 }
 
-// הצגת הודעות על המסך
 function showMessage(message) {
     const messageDiv = document.createElement('div');
     messageDiv.style.position = 'absolute';
@@ -52,14 +46,13 @@ function showMessage(message) {
     setTimeout(() => document.body.removeChild(messageDiv), 2000);
 }
 
-// יצירה ועדכון HUD
 let hudCreated = false;
 let altitudeElement, scoreElement, difficultyElement;
+let lastAltitude = null;
+let lastScore = null;
+let lastDifficulty = null;
 
 function createHUD() {
-    if (hudCreated) return;
-    hudCreated = true;
-
     altitudeElement = document.createElement('div');
     altitudeElement.id = 'altitude';
     altitudeElement.style.position = 'absolute';
@@ -95,22 +88,55 @@ function createHUD() {
     difficultyElement.style.fontWeight = 'bold';
     difficultyElement.style.textShadow = '1px 1px 2px black';
     document.body.appendChild(difficultyElement);
+
+    const controlsInfo = document.createElement('div');
+    controlsInfo.style.position = 'absolute';
+    controlsInfo.style.bottom = '10px';
+    controlsInfo.style.left = '10px';
+    controlsInfo.style.color = 'white';
+    controlsInfo.style.fontFamily = 'Arial, sans-serif';
+    controlsInfo.style.fontSize = '14px';
+    controlsInfo.style.textShadow = '1px 1px 2px black';
+    controlsInfo.innerHTML = `
+            בקרות:<br>
+            W/S - הטייה למעלה/למטה (Pitch)<br>
+            A/D - גלגול שמאלה/ימינה (Roll)<br>
+            Q/E - פנייה שמאלה/ימינה (Yaw)<br>
+            חצים למעלה/למטה - האצה/האטה<br>
+            חצים שמאלה/ימינה - כיוון עדין של גלגול<br>
+            רווח - ירי<br>
+            C - החלפת מצלמה<br>
+            P - החלפת מטוס<br>
+            R - ביצוע סיבוב חבית (Barrel Roll)<br>
+            [ / ] - החלפת שיר קודם/הבא
+        `;
+    document.body.appendChild(controlsInfo);
+
+    hudCreated = true;
 }
 
 function updateHUD() {
     if (!hudCreated) createHUD();
-    altitudeElement.innerText = `גובה: ${player.position.y.toFixed(2)} מ'`;
-    scoreElement.innerText = `ניקוד: ${score}`;
-    difficultyElement.innerText = `רמת קושי: ${difficultyLevel}`;
+    if (player.position.y !== lastAltitude) {
+        altitudeElement.innerText = `גובה: ${player.position.y.toFixed(2)} מ'`;
+        lastAltitude = player.position.y;
+    }
+    if (score !== lastScore) {
+        scoreElement.innerText = `ניקוד: ${score}`;
+        lastScore = score;
+    }
+    if (difficultyLevel !== lastDifficulty) {
+        difficultyElement.innerText = `רמת קושי: ${difficultyLevel}`;
+        lastDifficulty = difficultyLevel;
+    }
 }
 
-// לולאת אנימציה
 function animate() {
     requestAnimationFrame(animate);
 
-    updatePlaneControls(keys);
+    currentPlane.update(keys);
     updateEnvironment();
-    checkCollisions(bullets, balloons);
+    checkCollisions(currentPlane.bullets, balloons);
     updateHUD();
 
     const offset = cameraOffsets[currentCameraView].clone().applyQuaternion(player.quaternion);
@@ -127,7 +153,6 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// אתחול המשחק
 setupScene();
 createEnvironment();
 animate();
@@ -137,7 +162,6 @@ try {
     console.log('שגיאה בהפעלת מוזיקה:', e);
 }
 
-// התאמה לגודל החלון
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();

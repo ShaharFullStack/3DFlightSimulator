@@ -113,7 +113,6 @@ function updatePlaneQuaternion() {
     player.quaternion.copy(planeOrientation);
 }
 
-// ====== פונקציה ליצירת מטוס בסיסי 1 ======
 function createPlaneOne() {
     const planeGroup = new THREE.Group();
     const bodyGeo = new THREE.BoxGeometry(0.8, 0.8, 4);
@@ -192,7 +191,6 @@ function createPlaneOne() {
     return planeGroup;
 }
 
-// ====== פונקציה ליצירת מטוס בסיסי 2 ======
 function createPlaneTwo() {
     const planeGroup = new THREE.Group();
     const bodyGeo = new THREE.BoxGeometry(0.6, 0.6, 3);
