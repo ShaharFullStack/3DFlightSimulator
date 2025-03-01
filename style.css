@@ -1,0 +1,44 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+#altitude, #score, #crash {
+    position: absolute;
+    padding: 8px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    z-index: 9999;
+}
+
+#altitude {
+    top: 10px;
+    left: 10px;
+}
+
+#score {
+    top: 50px;
+    left: 10px;
+}
+
+#crash {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+#planeSelection {
+    position: absolute;
+    top: 10px;
+    left: 150px;
+    z-index: 9999;
+}
+
+#planeSelection button {
+    display: block;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
